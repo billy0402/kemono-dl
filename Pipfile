@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+beautifulsoup4 = "*"
+pillow = "*"
+yt-dlp = "*"
+
+[dev-packages]
+flake8 = "*"
+flake8-commas = "*"
+mypy = "*"
+yapf = "*"
+
+[requires]
+python_version = "3.10"
