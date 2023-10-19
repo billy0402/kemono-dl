@@ -143,7 +143,7 @@ class downloader:
             if self.skip_user(user):
                 return
         logger.info(f"Downloading posts from {site}.party | {service} | {user['name']} | {user['id']}")
-        chunk = 0
+        chunk = 50
         first = True
         while True:
             if is_post:
@@ -176,9 +176,9 @@ class downloader:
                 except:
                     logger.exception("Unable to download post | service:{service} user_id:{user_id} post_id:{id}".format(**post['post_variables']))
                 self.comp_posts.append("https://{site}/{service}/user/{user_id}/post/{id}".format(**post['post_variables']))
-            if len(json) < 25:
+            if chunk == 50:
                 return # completed
-            chunk += 25
+            # chunk += 25
 
 
     def download_icon_banner(self, post:dict, img_types:list):
