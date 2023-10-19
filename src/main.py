@@ -292,10 +292,10 @@ class downloader:
         new_post['post_variables']['username'] = user['name']
         new_post['post_variables']['site'] = domain
         new_post['post_variables']['service'] = post['service']
-        new_post['post_variables']['added'] = datetime.datetime.strptime(post['added'], r'%a, %d %b %Y %H:%M:%S %Z').strftime(self.date_strf_pattern) if post['added'] else None
-        new_post['post_variables']['updated'] = datetime.datetime.strptime(post['edited'], r'%a, %d %b %Y %H:%M:%S %Z').strftime(self.date_strf_pattern) if post['edited'] else None
-        new_post['post_variables']['user_updated'] = datetime.datetime.strptime(user['updated'], r'%a, %d %b %Y %H:%M:%S %Z').strftime(self.date_strf_pattern) if user['updated'] else None
-        new_post['post_variables']['published'] = datetime.datetime.strptime(post['published'], r'%a, %d %b %Y %H:%M:%S %Z').strftime(self.date_strf_pattern) if post['published'] else None
+        new_post['post_variables']['added'] = datetime.datetime.fromisoformat(post['added']).strftime(self.date_strf_pattern) if post['added'] else None
+        new_post['post_variables']['updated'] = datetime.datetime.fromisoformat(post['edited']).strftime(self.date_strf_pattern) if post['edited'] else None
+        new_post['post_variables']['user_updated'] = datetime.datetime.utcfromtimestamp(user['updated']).strftime(self.date_strf_pattern) if user['updated'] else None
+        new_post['post_variables']['published'] = datetime.datetime.fromisoformat(post['published']).strftime(self.date_strf_pattern) if post['published'] else None
 
         new_post['post_path'] = compile_post_path(new_post['post_variables'], self.download_path_template, self.restrict_ascii)
 
