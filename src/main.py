@@ -134,7 +134,7 @@ class downloader:
         site = found.group(2)
         service = found.group(4)
         user_id = found.group(5)
-        is_post = found.group(6)
+        is_post = True
         user = self.get_user(user_id, service)
         if not user:
             logger.error(f"Unable to find user info in creators list | {service} | {user_id}")
