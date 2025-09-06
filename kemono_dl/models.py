@@ -172,7 +172,7 @@ class FileTemplateVaribales:
         sha256 = server_file_name
         filename = attachment.name
         file_name, file_ext = splitext(filename)
-        index = attachment.index
+        index = attachment.index + 1
 
         self.service = creator.service
         self.creator_id = creator.id
