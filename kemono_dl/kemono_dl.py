@@ -22,7 +22,7 @@ OverwriteMode = Literal[False, "soft", True]
 class KemonoDL:
     COOMER_DOMAIN = "https://coomer.st"
     KEMONO_DOMAIN = "https://kemono.cr"
-    PAWCHIVE_DOMAIN = "https://pawchive.st"
+    PAWCHIVE_DOMAIN = "https://pawchive.pw"
     POST_STEP_SIZE = 50
     URL_PARSE_PATTERN = r"^https://(kemono|coomer|pawchive)\.\w+/([^/]+)/user/([^/]+)(?:/post/([^/]+))?$"
     DEFAULT_OUTPUT_TEMPLATE = "{service}/{creator_id}/{post_id}/{filename}"
