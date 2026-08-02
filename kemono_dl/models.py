@@ -1,9 +1,22 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from datetime import datetime
 from os.path import splitext
 from typing import List
 
 
+def ignore_extra_kwargs(cls):
+    original_init = cls.__init__
+    valid_keys = {f.name for f in fields(cls)}
+
+    def __init__(self, *args, **kwargs):
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_keys}
+        original_init(self, *args, **filtered_kwargs)
+
+    cls.__init__ = __init__
+    return cls
+
+
+@ignore_extra_kwargs
 @dataclass
 class Creator:
     id: str
@@ -23,6 +36,7 @@ class Creator:
     import_size_cap_gb: int | None = None
 
 
+@ignore_extra_kwargs
 @dataclass
 class FavoriteCreator:
     id: str
@@ -40,6 +54,7 @@ class FavoriteCreator:
     import_size_cap_gb: int | None = None
 
 
+@ignore_extra_kwargs
 @dataclass
 class Attachment:
     name: str
@@ -48,6 +63,7 @@ class Attachment:
     server: str | None = None
 
 
+@ignore_extra_kwargs
 @dataclass
 class Post:
     id: str
@@ -152,6 +168,7 @@ def findNameFromPath(attachments, previews, path):
     return None
 
 
+@ignore_extra_kwargs
 @dataclass
 class FileTemplateVaribales:
     service: str
