@@ -105,7 +105,7 @@ class KemonoDL:
         try:
             if KemonoDL.PAWCHIVE_DOMAIN:
                 url = f"{domain}/account/login"
-                response = self.session.post(url, data={"location": "/artists", "username": "jtkdlsptinla", "password": "E8Dr7ojipEm3ZRV46bQa"})
+                response = self.session.post(url, data={"location": "/artists", "username": username, "password": password})
                 response.raise_for_status()
                 return True
             else:
