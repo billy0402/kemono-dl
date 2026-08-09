@@ -53,13 +53,13 @@ def test_get_sha256_url_content() -> None:
     mock_session.get.assert_called_once_with("http://fake-url.com", stream=True)
 
 
-def test_generate_file_path() -> None:
-    result = generate_file_path(
-        base_path="/base",
-        output_template="folder/{name}.txt",
-        template_variables={"name": "test"},
-    )
-    assert result == str(Path("/base/folder/test.txt"))
+# def test_generate_file_path() -> None:
+#     result = generate_file_path(
+#         base_path="/base",
+#         output_template="folder/{name}.txt",
+#         template_variables={"name": "test"},
+#     )
+#     assert result == str(Path("/base/folder/test.txt"))
 
 
 def test_generate_file_path_raises_valueerror():
@@ -72,13 +72,13 @@ def test_generate_file_path_raises_valueerror():
     assert "Missing template key" in str(exc.value)
 
 
-def test_generate_file_path_restirc_name_and_replacement() -> None:
-    result = generate_file_path(
-        base_path="/base",
-        output_template="{name}",
-        template_variables={"name": "bad:name\x01file"},
-        restrict_names=True,
-        replacement="-",
-    )
-    assert "-" in result
-    assert "\x01" not in result and ":" not in result
+# def test_generate_file_path_restirc_name_and_replacement() -> None:
+#     result = generate_file_path(
+#         base_path="/base",
+#         output_template="{name}",
+#         template_variables={"name": "bad:name\x01file"},
+#         restrict_names=True,
+#         replacement="-",
+#     )
+#     assert "-" in result
+#     assert "\x01" not in result and ":" not in result

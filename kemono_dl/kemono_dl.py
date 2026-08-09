@@ -302,21 +302,26 @@ class KemonoDL:
         if creator is None:
             return
 
+        post_errors = 0
+
         if self.skip_attachments:
             print("[info] Skipping Post attachments.")
         else:
-            self.download_post_attachments(domain, creator, post)
+            post_errors += self.download_post_attachments(domain, creator, post)
 
         if self.write_content:
             self.write_post_content(creator, post)
 
-        self.write_archive_file(domain, post.service, post.user, post.id)
+        if post_errors == 0:
+            self.write_archive_file(domain, post.service, post.user, post.id)
 
-    def download_post_attachments(self, domain: str, creator: Creator, post: Post) -> None:
+    def download_post_attachments(self, domain: str, creator: Creator, post: Post):
         if not post.attachments:
             return
 
         print(f"[downloading] Attachments: {len(post.attachments)}")
+
+        attachment_errors = 0
 
         for attachment in post.attachments:
             if self.attachment_matches_filters(attachment):
@@ -353,19 +358,24 @@ class KemonoDL:
             else:
                 url = f"{attachment.server}/data{attachment.path}"
 
-            for attempt in range(self.max_retries):
+            for _ in range(self.max_retries):
                 try:
                     download_file(self.session, url, file_path, temp_file=not self.no_tmp)
                     break
                 except Exception as e:
                     print(f"[Error] Failed to download attachment from {url!r}: {e}")
+                    attachment_errors += 1
             else:
                 print(f"[Error] All {self.max_retries} download reties failed")
-                return
+                attachment_errors += 1
+                continue
 
             actual_sha256 = get_sha256_hash(file_path)
             if expected_sha256 != actual_sha256:
                 print(f"[Error] File downloaded with incorrect SHA-256. Expected: {expected_sha256} Actual: {actual_sha256}")
+                attachment_errors += 1
+
+        return attachment_errors
 
     def write_post_content(self, creator: Creator, post: Post) -> None:
         print("[writing] Post Content")
@@ -405,10 +415,7 @@ class KemonoDL:
         skip_extensions = self.attachment_filters.get("skip_extensions", None)
         file_ext = os.path.splitext(attachment.name)[-1][1:]
 
-        if skip_extensions and file_ext in skip_extensions:
-            return True
-
-        return False
+        return bool(skip_extensions and file_ext in skip_extensions)
 
     def post_matches_filters(self, post: Post) -> bool:
         date_filter = self.post_filters.get("date", {})
