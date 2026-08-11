@@ -1,6 +1,7 @@
 import http.cookiejar
 
 # import mimetypes
+import json
 import os
 import re
 import time
@@ -35,7 +36,7 @@ class KemonoDL:
             # "pfp": DEFAULT_OUTPUT_TEMPLATE,
             # "banner": DEFAULT_OUTPUT_TEMPLATE,
             "content": DEFAULT_OUTPUT_TEMPLATE,
-            # "json": DEFAULT_OUTPUT_TEMPLATE,
+            "json": DEFAULT_OUTPUT_TEMPLATE,
         },
         restrict_names: bool = False,
         custom_template_variables: dict = {},
@@ -46,6 +47,7 @@ class KemonoDL:
         attachment_filters: dict = {},
         skip_attachments: bool = False,
         write_content: bool = False,
+        write_json: bool = False,
         no_tmp: bool = False,
     ) -> None:
         self.domain = KemonoDL.COOMER_DOMAIN
@@ -61,6 +63,7 @@ class KemonoDL:
         self.attachment_filters = attachment_filters
         self.skip_attachments = skip_attachments
         self.write_content = write_content
+        self.write_json = write_json
         self.no_tmp = no_tmp
 
         self.archive_file = archive_file
@@ -304,20 +307,31 @@ class KemonoDL:
 
         post_errors = 0
 
+        if self.write_json:
+            try:
+                self.write_post_json(creator, post)
+            except Exception as e:
+                print(f"[Error] Failed to write post json: {e}")
+                post_errors += 1
+
+        if self.write_content:
+            try:
+                self.write_post_content(creator, post)
+            except Exception as e:
+                print(f"[Error] Failed to write post content: {e}")
+                post_errors += 1
+
         if self.skip_attachments:
             print("[info] Skipping Post attachments.")
         else:
             post_errors += self.download_post_attachments(domain, creator, post)
-
-        if self.write_content:
-            self.write_post_content(creator, post)
 
         if post_errors == 0:
             self.write_archive_file(domain, post.service, post.user, post.id)
 
     def download_post_attachments(self, domain: str, creator: Creator, post: Post):
         if not post.attachments:
-            return
+            return 0
 
         print(f"[downloading] Attachments: {len(post.attachments)}")
 
@@ -332,7 +346,7 @@ class KemonoDL:
 
             file_path = generate_file_path(
                 self.path,
-                self.output_templates.get("attachments", {}),
+                self.output_templates.get("attachments", self.DEFAULT_OUTPUT_TEMPLATE),
                 template_variables.toDict(self.custom_template_variables),
                 self.restrict_names,
             )
@@ -377,6 +391,40 @@ class KemonoDL:
 
         return attachment_errors
 
+    def write_post_json(self, creator: Creator, post: Post) -> None:
+        print("[writing] Post Json")
+
+        sha256 = compute_sha256(json.dumps(post.json))
+        attachment = Attachment(name=f"{post.id}.json", path=f"{sha256}.json")
+        template_variables = FileTemplateVaribales(creator, post, attachment)
+        file_path = generate_file_path(
+            self.path,
+            self.output_templates.get("json", self.DEFAULT_OUTPUT_TEMPLATE),
+            template_variables.toDict(self.custom_template_variables),
+            self.restrict_names,
+        )
+        expected_sha256 = template_variables.sha256
+
+        if os.path.exists(file_path):
+            actual_sha256 = get_sha256_hash(file_path)
+
+            if self.force_overwrite is False:
+                print(f"[info] File already exists at {file_path}")
+                if expected_sha256 != actual_sha256:
+                    print(f'[warning] File sha256 mismatch. Expected "{expected_sha256}" recieved"{actual_sha256}"')
+                return
+
+            elif self.force_overwrite == "soft" and expected_sha256 == actual_sha256:
+                print(f"[info] File already exists with matching sha256 at {file_path}")
+                return
+
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        print(f"[writing] Destination: {file_path!r}")
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(post.json, f, indent=4)
+
     def write_post_content(self, creator: Creator, post: Post) -> None:
         print("[writing] Post Content")
 
@@ -385,7 +433,7 @@ class KemonoDL:
         template_variables = FileTemplateVaribales(creator, post, attachment)
         file_path = generate_file_path(
             self.path,
-            self.output_templates.get("content", {}),
+            self.output_templates.get("content", self.DEFAULT_OUTPUT_TEMPLATE),
             template_variables.toDict(self.custom_template_variables),
             self.restrict_names,
         )
