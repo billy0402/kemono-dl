@@ -82,11 +82,13 @@ class Post:
     captions: List[str] | None
     tags: List[str] | None
 
+    json: dict
+
     def __init__(self, post_api: dict) -> None:
         post = post_api.get("post", post_api)
         attachments = post_api.get("attachments", [])
         previews = post_api.get("previews", [])
-
+        self.json = post_api
         self.id = post.get("id", "")
         self.user = post.get("user", "")
         self.service = post.get("service", "")
