@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 from datetime import datetime
 
 from .kemono_dl import KemonoDL
@@ -36,6 +37,7 @@ def parse_args():
     parser.add_argument("--skip-extensions", metavar="EXTs", type=str, help="A comma seperated list of file extensions to skip (Do not include the period) (Checks the extention of the filename not the server filename).")
     parser.add_argument("--skip-attachments", action="store_true", help="Skip downloading post attachments.")
     parser.add_argument("--write-content", action="store_true", help="Write Post content to an html file.")
+    parser.add_argument("--write-json", action="store_true", help="Write Post api json response to an json file.")
 
     return parser.parse_args()
 
@@ -57,7 +59,7 @@ def main() -> None:
 
     if args.version:
         print(__version__)
-        quit()
+        sys.exit()
 
     custom_template_variables = {}
     if args.custom_template_variables:
@@ -79,7 +81,7 @@ def main() -> None:
             date_type, date_string = parse_value_type(arg)
             if date_type not in filter and date_type is not None:
                 print(f"[Error] Invalid date filter: {arg!r}")
-                quit()
+                sys.exit()
             try:
                 if date_type is None:
                     filter["published"] = datetime.strptime(date_string, "%Y%m%d")  # type: ignore
@@ -87,7 +89,7 @@ def main() -> None:
                     filter[date_type] = datetime.strptime(date_string, "%Y%m%d")  # type: ignore
             except ValueError:
                 print(f"[Error] Invalid date format. {date_string!r} does not match '%Y%m%d'")
-                quit()
+                sys.exit()
 
     attachment_filters = {
         "skip_extensions": [],
@@ -101,7 +103,7 @@ def main() -> None:
         # "pfp": KemonoDL.DEFAULT_OUTPUT_TEMPLATE,
         # "banner": KemonoDL.DEFAULT_OUTPUT_TEMPLATE,
         "content": KemonoDL.DEFAULT_OUTPUT_TEMPLATE,
-        # "json": KemonoDL.DEFAULT_OUTPUT_TEMPLATE,
+        "json": KemonoDL.DEFAULT_OUTPUT_TEMPLATE,
     }
 
     if args.output:
@@ -109,7 +111,7 @@ def main() -> None:
             output_type, output_value = parse_value_type(output)
             if output_type not in output_templates and output_type is not None:
                 print(f"[Error] Invalid output Type {output_type!r} for {output!r}")
-                quit()
+                sys.exit()
             if output_type is None:
                 for key in output_templates:
                     output_templates[key] = output_value  # type: ignore
@@ -126,6 +128,7 @@ def main() -> None:
         attachment_filters=attachment_filters,
         skip_attachments=args.skip_attachments,
         write_content=args.write_content,
+        write_json=args.write_json,
         no_tmp=args.no_tmp,
     )
 
