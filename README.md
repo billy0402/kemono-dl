@@ -67,6 +67,7 @@ If no specific type is provided, this passed template will be applied for all ou
 | -------------- | ------------------------------------------------ |
 | `"attachment"` | The output template for saving post attachments. |
 | `"content"`    | The output template for saving post content.     |
+| `"json"`       | The output template for saving post json.        |
 
 #### Output Template Type Examples
 ```bash
